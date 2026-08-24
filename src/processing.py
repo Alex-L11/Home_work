@@ -11,6 +11,6 @@ def filter_by_state(dict_list: List[dict[str, Any]], state: str = 'EXECUTED') ->
 def sort_by_date(dict_list: List[dict[str, Any]], reverse: bool = True) -> List[dict[str, Any]]:
     """Фунция принимает список словарей и необязательный параметр, задающий порядок сортировки по дате. По умолчанию
      сортировка по убыванию"""
-    dict_list_with_date = dict_list.get("date")
-    return dict_list_with_date(key=lambda x: x['date'], reverse=True)
+    dict_list_sorted = sorted(dict_list, key=lambda x: x['date'], reverse = True)
 
+    return dict_list_sorted
