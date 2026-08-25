@@ -8,7 +8,13 @@ def test_get_mask_card_number():
         get_mask_card_number('7000792289606361233')
 
     with pytest.raises(TypeError):
-        get_mask_card_number(122334444556667)
+        get_mask_card_number('2334567676')
+
+    with pytest.raises(TypeError):
+        get_mask_card_number('')
+
+    with pytest.raises(TypeError):
+        get_mask_card_number('qwerrtyty')
 
 
 
