@@ -6,11 +6,9 @@ def get_mask_card_number(number: Any) -> str:
     num_card = str(number)
     mask_card_number = ""
     if len(num_card) == 16:
-        mask_card_number = (
-                num_card[0:4] + " " + num_card[4:6] + "** ****" + " " + num_card[-4:]
-        )
+        mask_card_number = f"{num_card[0:4]} {num_card[4:6]}** **** {num_card[-4:]}"
     else:
-        pass
+        raise TypeError("Введите 16-ти значный номер карты")
 
     return mask_card_number
 
