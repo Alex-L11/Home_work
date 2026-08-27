@@ -15,10 +15,8 @@ def get_mask_card_number(number: Any) -> str:
 
 def get_mask_account(account: int) -> str:
     """Принимает номер счета, возвращает его маску"""
+
     num_account = str(account)
-    mask_account = ""
-    if account == str:
-        raise NameError("Номер счета должен содержать только цифры")
     if len(num_account) == 20:
         mask_account = f'** {num_account[-4:]}'
     else:
