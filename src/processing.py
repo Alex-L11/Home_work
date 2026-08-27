@@ -28,14 +28,16 @@ def filter_by_state(dict_list: List[dict[str, Any]], state: str = "EXECUTED") ->
 
 
 def sort_by_date(dict_list: List[dict[str, int | str]], reverse: bool = True) -> List[dict[str, int | str]]:
-    """Фунция принимает список словарей и необязательный параметр, задающий порядок сортировки по дате. По умолчанию
+    """Функция принимает список словарей и необязательный параметр, задающий порядок сортировки по дате. По умолчанию
      сортировка по убыванию"""
-    dict_list_sorted = sorted(dict_list, key=lambda x: x['date'], reverse = True)
+    if dict_list == '':
+        raise TypeError("Не ввели данные")
+    for diction in dict_list:
+        if len(diction["date"]) == 26:
+            continue
+        else:
+            raise TypeError("Введите значения в параметр 'date' в формате: гггг-мм-ддTчч:мм:сс.сссссс")
+
+    dict_list_sorted = sorted(dict_list, key=lambda x: (x['date'], x['id']), reverse=reverse)
 
     return dict_list_sorted
-
-
-
-if __name__ == '__main__':
-    print(filter_by_state([{'id': 594226727, 'date': '2018-09-12T21:27:25.241689'},
-            {'id': 615064591, 'date': '2018-10-14T08:21:33.419441'}]))
