@@ -1,6 +1,9 @@
-import pytest
-from src.processing import filter_by_state, sort_by_date
 from typing import Any
+
+import pytest
+
+from src.processing import filter_by_state, sort_by_date
+
 
 def test_filter_by_state() -> None:
     with pytest.raises(TypeError):
@@ -12,23 +15,26 @@ def test_filter_by_state_no_state(dict_list_5: list[dict[str, Any]]) -> Any:
         filter_by_state(dict_list_5)
 
 
-@pytest.mark.parametrize('idx', [0, 1, 2, 3])
+@pytest.mark.parametrize("idx", [0, 1, 2, 3])
 def test_filter_by_state_idx(dict_list_4: list[dict[str, Any]], idx: int) -> None:
     item = dict_list_4[idx]
-    assert 'state' in item
+    assert "state" in item
 
 
-@pytest.mark.parametrize("state_filter, expected_count", [
-    ("EXECUTED", 2),
-    ("CANCELED", 1),
-    ("RANDOM", 1),
-])
+@pytest.mark.parametrize(
+    "state_filter, expected_count",
+    [
+        ("EXECUTED", 2),
+        ("CANCELED", 1),
+        ("RANDOM", 1),
+    ],
+)
 def test_filter_by_state_filter(dict_list_4: list[dict[str, Any]], state_filter: str, expected_count: int) -> None:
     result = filter_by_state(dict_list_4, state=state_filter)
     assert len(result) == expected_count
 
 
-def test_sort_by_date(dict_list_2: list[dict[str, Any]], dict_list_2_a:list[dict[str, Any]]) -> None:
+def test_sort_by_date(dict_list_2: list[dict[str, Any]], dict_list_2_a: list[dict[str, Any]]) -> None:
     assert sort_by_date(dict_list_2) == dict_list_2_a
 
 
@@ -41,10 +47,15 @@ def test_sort_by_date_empty() -> None:
         sort_by_date([])
 
     with pytest.raises(TypeError):
-        sort_by_date([{'id': 939719570, 'state': 'EXECUTED', 'date': '2018-06-30T:08:58.425572'},
-                      {'id': 615064591, 'state': 'CANCELED', 'date': '2016-30T2:08:58.425572'},])
+        sort_by_date(
+            [
+                {"id": 939719570, "state": "EXECUTED", "date": "2018-06-30T:08:58.425572"},
+                {"id": 615064591, "state": "CANCELED", "date": "2016-30T2:08:58.425572"},
+            ]
+        )
 
 
-def test_sort_by_date_repeat(dict_list_date: list[dict[str, Any]], dict_list_date_reverse: list[dict[str, Any]])\
-        -> None:
+def test_sort_by_date_repeat(
+    dict_list_date: list[dict[str, Any]], dict_list_date_reverse: list[dict[str, Any]]
+) -> None:
     assert sort_by_date(dict_list_date) == dict_list_date_reverse

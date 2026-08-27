@@ -18,7 +18,7 @@ def get_mask_account(account: int) -> str:
 
     num_account = str(account)
     if len(num_account) == 20:
-        mask_account = f'** {num_account[-4:]}'
+        mask_account = f"** {num_account[-4:]}"
     else:
         raise TypeError("Введите 20-ти значный номер счета")
 

@@ -1,4 +1,4 @@
-from src.masks import get_mask_card_number, get_mask_account
+from src.masks import get_mask_account, get_mask_card_number
 
 
 def mask_account_card(card_number: str) -> str:
@@ -29,7 +29,7 @@ def get_date(date: str) -> str:
             raise TypeError("Ошибка типа данных")
 
     if len(date) == 26:
-        date_filter = f'{date[8:10]}.{date[5:7]}.{date[0:4]}'
+        date_filter = f"{date[8:10]}.{date[5:7]}.{date[0:4]}"
     else:
         raise TypeError("Введите дату формата: гггг-мм-ддTчч:мм:сс.сссссс")
 
