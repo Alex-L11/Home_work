@@ -15,7 +15,7 @@ def mask_account_card(card_number: str) -> str:
     if len(number_card) == 16:
         masked_num = get_mask_card_number(number_card)
     elif len(number_card) == 20:
-        masked_num = get_mask_account(number_card)
+        masked_num = get_mask_account(int(number_card))
     else:
         raise TypeError("Введите имя и номер карты или счета")
 
@@ -34,6 +34,3 @@ def get_date(date: str) -> str:
         raise TypeError("Введите дату формата: гггг-мм-ддTчч:мм:сс.сссссс")
 
     return date_filter
-
-
-
