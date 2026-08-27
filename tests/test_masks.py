@@ -1,7 +1,8 @@
 from src.masks import get_mask_card_number, get_mask_account
 import pytest
+from typing import Any
 
-def test_get_mask_card_number():
+def test_get_mask_card_number() -> Any:
     assert get_mask_card_number('7000792289606361') == '7000 79** **** 6361'
 
     with pytest.raises(TypeError):
@@ -17,7 +18,7 @@ def test_get_mask_card_number():
         get_mask_card_number('qwerrtyty')
 
 
-def test_get_mask_account():
+def test_get_mask_account() -> None:
     assert get_mask_account(73654108430135874305) == '** 4305'
 
     with pytest.raises(TypeError):
@@ -26,8 +27,5 @@ def test_get_mask_account():
     with pytest.raises(TypeError):
         get_mask_account(324376677345676788888454654)
 
-    with pytest.raises(NameError):
-        get_mask_account(asfdf)
-
-
-
+    with pytest.raises(TypeError):
+        get_mask_account('asd')
