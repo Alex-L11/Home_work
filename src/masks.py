@@ -6,21 +6,20 @@ def get_mask_card_number(number: Any) -> str:
     num_card = str(number)
     mask_card_number = ""
     if len(num_card) == 16:
-        mask_card_number = (
-                num_card[0:4] + " " + num_card[4:6] + "** ****" + " " + num_card[-4:]
-        )
+        mask_card_number = f"{num_card[0:4]} {num_card[4:6]}** **** {num_card[-4:]}"
     else:
-        pass
+        raise TypeError("Введите 16-ти значный номер карты")
 
     return mask_card_number
 
 
 def get_mask_account(account: int) -> str:
     """Принимает номер счета, возвращает его маску"""
+
     num_account = str(account)
-    mask_account = ""
-    if len(num_account) >= 4:
-        mask_account = "**" + num_account[-4:]
+    if len(num_account) == 20:
+        mask_account = f"** {num_account[-4:]}"
     else:
-        pass
+        raise TypeError("Введите 20-ти значный номер счета")
+
     return mask_account
