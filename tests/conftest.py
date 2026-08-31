@@ -313,3 +313,5 @@ def transactions_no_correct_description() -> List[dict[str, Any]]:
            "to": "Visa Platinum 8990922113665229"
        }
    ]
+
+
