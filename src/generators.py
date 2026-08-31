@@ -69,6 +69,7 @@ def filter_by_currency(transactions: List[dict[str, Any]], currency: str) -> Ite
 
 
 def transaction_descriptions(description_transaction: List[dict[str, Any]]) -> Iterator[str]:
+    """Функкция принимает список словарей с транзакциями и возвращает описание каждой операции по очереди"""
     russian_letters= set('абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ')
     for trans in description_transaction:
         descript = trans.get("description")
@@ -76,13 +77,5 @@ def transaction_descriptions(description_transaction: List[dict[str, Any]]) -> I
             yield descript
 
 
-
-
-
-# if __name__ == '__main__':
-#     descriptions = transaction_descriptions(transa ctions)
-#     for _ in range(5):
-#         print(next(descriptions))
-#
-# def card_number_generator():
-#     pass
+def card_number_generator(cads_numbers: int) -> str:
+     pass
