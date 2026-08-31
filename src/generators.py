@@ -68,14 +68,21 @@ def filter_by_currency(transactions: List[dict[str, Any]], currency: str) -> Ite
             yield trans
 
 
+def transaction_descriptions(description_transaction: List[dict[str, Any]]) -> Iterator[str]:
+    russian_letters= set('абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ')
+    for trans in description_transaction:
+        descript = trans.get("description")
+        if isinstance(descript, str) and bool(russian_letters.intersection(descript)):
+            yield descript
 
 
 
 
 
-# def transaction_descriptions():
-#     pass
-#
+# if __name__ == '__main__':
+#     descriptions = transaction_descriptions(transa ctions)
+#     for _ in range(5):
+#         print(next(descriptions))
 #
 # def card_number_generator():
 #     pass
