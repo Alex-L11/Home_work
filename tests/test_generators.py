@@ -1,6 +1,6 @@
 from typing import List, Any, Iterable
 import pytest
-from src.generators import filter_by_currency, transaction_descriptions
+from src.generators import filter_by_currency, transaction_descriptions, card_number_generator
 
 
 def test_filter_by_currency_exactly_one_valid(transactions_all: List[dict[str, Any]]) -> Any:
@@ -48,5 +48,23 @@ def test_transaction_descriptions_actual(transactions_all: list[dict[str, Any]],
 def test_transaction_no_descriptions(transactions_no_correct_description):
     result = list(transaction_descriptions(transactions_no_correct_description))
     assert result == []
+
+
+@pytest.mark.parametrize("start_num, end_num, expected_num", [
+    (1, 5, ["0000 0000 0000 0001",
+            "0000 0000 0000 0002",
+            "0000 0000 0000 0003",
+            "0000 0000 0000 0004",
+            "0000 0000 0000 0005",
+            ]
+                         )])
+def test_card_number_generator_norm(start_num: int, end_num: int, expected_num: str):
+    result = card_number_generator(1, 5)
+    assert list(result) == expected_num
+
+
+def test_card_number_generator_no_num():
+    with pytest.raises(ValueError):
+        list(card_number_generator(0, 0))
 
 
