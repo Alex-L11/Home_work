@@ -1,9 +1,9 @@
-
 import logging
 from functools import wraps
 from typing import Any, Callable, Optional, TypeVar
 
 F = TypeVar("F", bound=Callable[..., Any])
+
 
 def log(filename: Optional[str] = None) -> Callable[[F], F]:
     """
@@ -11,7 +11,8 @@ def log(filename: Optional[str] = None) -> Callable[[F], F]:
     Принимает необязательный аргумент "filename", который определяет, куда будут записываться логи:
     - Если filename задан, логи записываются в указанный файл
     - Если filename не задан, логи выводятся в консоль
-     """
+    """
+
     def decorator(func: F) -> F:
         @wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
@@ -40,19 +41,15 @@ def log(filename: Optional[str] = None) -> Callable[[F], F]:
                 return result
             except Exception as e:
                 # логгируем тип ошибки
-                logger.info("%s error: %s. Inputs: %r, %r", func.__name__, type(e).__name__, args, kwargs,)
+                logger.info(
+                    "%s error: %s. Inputs: %r, %r",
+                    func.__name__,
+                    type(e).__name__,
+                    args,
+                    kwargs,
+                )
                 raise
 
-        return wrapper
+        return wrapper # type: ignore[return-value]
 
     return decorator
-
-
-@log(filename="mylog.txt")
-def my_function(x, y):
-    return x + y
-
-my_function(1, 2)
-
-
-
