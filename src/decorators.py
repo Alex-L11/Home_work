@@ -50,6 +50,6 @@ def log(filename: Optional[str] = None) -> Callable[[F], F]:
                 )
                 raise
 
-        return wrapper # type: ignore[return-value]
+        return wrapper  # type: ignore[return-value]
 
     return decorator

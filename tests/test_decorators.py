@@ -9,7 +9,7 @@ from src.decorators import log
 
 def test_log(capsys: Any) -> None:
     @log()
-    def wrap(x, y):
+    def wrap(x: int, y: int) -> int:
         return x + y
 
     result = wrap(2, 4)
@@ -20,13 +20,13 @@ def test_log(capsys: Any) -> None:
     assert out == ""
 
 
-def test_log_file():
+def test_log_file() -> None:
     log_file = "mylog.txt"
     if os.path.exists(log_file):
         os.remove(log_file)
 
     @log(filename=log_file)
-    def wrap(x, y):
+    def wrap(x: int, y: int) -> int:
         return x + y
 
     result = wrap(2, 5)
@@ -40,4 +40,4 @@ def test_log_file():
     assert "wrap ok" in content
 
     with pytest.raises(TypeError):
-        wrap(1, "1")
+        wrap(1, "1")  # type: ignore[arg-type]
