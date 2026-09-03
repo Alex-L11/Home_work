@@ -31,6 +31,7 @@ def log(filename: Optional[str] = None) -> Callable[[F], F]:
             # сообщения и куда их отправлять
 
             handler.setFormatter(logging.Formatter("%(message)s"))
+            logger.handlers.clear()
             logger.addHandler(handler)
 
             try:
