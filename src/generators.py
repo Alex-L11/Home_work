@@ -1,4 +1,4 @@
-from typing import List, Any, Iterator
+from typing import Any, Iterator, List
 
 transactions = [
     {
@@ -54,6 +54,8 @@ def filter_by_currency(transactions: List[dict[str, Any]], currency: str) -> Ite
     операции соответсвует заданной (например USD)"""
 
     # проверка, что это словарь, если нет пропускаем
+    if not (isinstance(transactions, list)) or (not transactions) or (currency == ""):
+        raise TypeError("Неверный тип транзакций")
     for trans in transactions:
         if not isinstance(trans, dict):
             continue

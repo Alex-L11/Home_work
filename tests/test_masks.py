@@ -31,4 +31,4 @@ def test_get_mask_account() -> None:
         get_mask_account(324376677345676788888454654)
 
     with pytest.raises(TypeError):
-        get_mask_account("asd")
+        get_mask_account("asd")  # type: ignore[arg-type]
