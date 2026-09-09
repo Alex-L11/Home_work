@@ -12,6 +12,8 @@ def get_list_transactions(way_json: str) -> list[dict[str, Any]]:
         with open(file_path, "r", encoding="utf-8") as file_transactions:
             try:
                 transaction_data = json.load(file_transactions)
+                if not isinstance(transaction_data, list):
+                    return []
                 return transaction_data
             except json.JSONDecodeError:
                 print("Ошибка декодирования файла")
