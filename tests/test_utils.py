@@ -44,3 +44,18 @@ def test_get_list_transactions_empty_file():
         result = get_list_transactions(("mock/path"))
         assert result == []
         m_open.assert_called_once()
+
+
+def test_get_list_transactions_file_not_found():
+    with patch("builtins.open", side_effect=FileNotFoundError("Файд не найден")):
+        result = get_list_transactions(("mock/path"))
+        assert result == []
+
+
+def test_get_list_transactions_not_a_list():
+    json_str = json.dumps({})
+    with patch("builtins.open", mock_open(read_data=json_str)):
+        result = get_list_transactions(("mock/path"))
+        assert result == []
+
+
