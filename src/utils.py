@@ -41,7 +41,7 @@ def get_transaction(data_trans: dict[str, Any]) -> float:
 
     try:
         amount = float(amount_transaction)
-    except ValueError, TypeError:
+    except (ValueError, TypeError):
         return 0.0
 
     if currency == "RUB":
