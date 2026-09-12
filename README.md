@@ -3,7 +3,7 @@
 ## Описание:
 
 Данный виджет находится в стадии разработки, пишется на языке Python.  
-На данный момент работают 7 блоков:
+На данный момент работают 11 блоков:
 * маскирует номер карты
 * маскирует номер счета
 * фильтрация выполненных операций по статусу
@@ -11,8 +11,11 @@
 * итератор для возвращения операций по уазанной валюте
 * генератор описания по каждой операции
 * генератор номеров банковских карт
-* Декоратор для логирования начала и конца выполнения фунции,
+* декоратор для логирования начала и конца выполнения фунции,
   ее результатов или возникших ошибок
+* принимает путь до JSON-файла и возвращает список словарей с данными о финансовых транзакциях.
+* принимает транзакцию и возвращает сумму транзакции в рублях.
+* принимает наименование валюты (USD, EUR) и сумму, зетем конвертирует валюту в рубли.
 
 ## Установка:
 
@@ -240,7 +243,7 @@ def transaction_descriptions(description_transaction: List[dict[str, Any]]) -> I
 
     Перевод организации
 
-#### *6) Генератор номеров банковских карт*
+#### *7) Генератор номеров банковских карт*
 код блока:
 ~~~python
 def card_number_generator(start_number: int, end_number: int) -> Iterator[str]:
@@ -267,7 +270,7 @@ def card_number_generator(start_number: int, end_number: int) -> Iterator[str]:
     0000 0000 0000 0005
 
 
-#### *7) Декоратор для логирования начала и конца выполнения фунции,  ее результатов или возникших ошибок*
+#### *8) Декоратор для логирования начала и конца выполнения фунции,  ее результатов или возникших ошибок*
 код блока:
 ~~~python
 F = TypeVar("F", bound=Callable[..., Any])
@@ -327,12 +330,112 @@ def log(filename: Optional[str] = None) -> Callable[[F], F]:
 Конец выполнения my_func ok
 7
     
+#### *9) Принимает путь до JSON-файла и возвращает список словарей с данными о финансовых транзакциях*
+код блока:
+~~~python
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+def get_list_transactions(way_json: str) -> list[dict[str, Any]]:
+    """Принимает путь до JSON-файла и возвращает список словарей с данными о финансовых транзакциях."""
+    file_path = os.path.join(BASE_DIR, "data", way_json)
+    try:
+        with open(file_path, "r", encoding="utf-8") as file_transactions:
+            try:
+                transaction_data = json.load(file_transactions)
+                if not isinstance(transaction_data, list):
+                    return []
+                return transaction_data
+            except json.JSONDecodeError:
+                print("Ошибка декодирования файла")
+                return []
+    except FileNotFoundError:
+        print("Файл не найден")
+        return []
+~~~
+*пример вывода данных:*
+[
+
+{'id': 441945886, 'state': 'EXECUTED', 'date': '2019-08-26T10:50:58.294041', 'operationAmount': {'amount': '31957.58', 'currency': {'name': 'руб.', 'code': 'RUB'}}, 'description': 'Перевод организации', 'from': 'Maestro 1596837868705199', 'to': 'Счет 64686473678894779589'},
+
+{'id': 863064926, 'state': 'EXECUTED', 'date': '2019-12-08T22:46:21.935582', 'operationAmount': {'amount': '41096.24', 'currency': {'name': 'USD', 'code': 'USD'}}, 'description': 'Открытие вклада', 'to': 'Счет 90424923579946435907'}
+]
+
+#### *11) принимает транзакцию и возвращает сумму транзакции в рублях*
+код блока:
+~~~python
+def get_transaction(data_trans: dict[str, Any]) -> float:
+    """Принимает транзакцию и возвращает сумму транзакции в рублях."""
+    get_amount = data_trans.get("operationAmount", {})
+    get_currency = get_amount.get("currency", {})
+    amount_transaction = get_amount.get("amount")
+
+    if isinstance(data_trans, dict):
+        currency = get_currency.get("code", "").upper()
+    else:
+        currency = str(get_currency).upper()
+
+    if not amount_transaction:
+        return 0.0
+
+    try:
+        amount = float(amount_transaction)
+    except ValueError, TypeError:
+        return 0.0
+
+    if currency == "RUB":
+        return amount
+
+    if currency in ("EUR", "USD"):
+        return currency_converter(currency, amount)
+
+    return currency_converter(currency, amount)
+~~~
+*пример вывода данных:*
+
+692242.54
+
+#### *12) принимает наименование валюты (USD, EUR) и сумму, зетем конвертирует валюту в рубли*
+код блока:
+~~~python    
+def currency_converter(currency: str, amount: float) -> float:
+    """Принимает наименование валюты (USD, EUR) и конвертирует валюту в рубли."""
+    from_currency = currency.upper()
+    to_currency = "RUB"
+
+    api_key = os.getenv("API_KEY")
+    if not api_key:
+        raise ValueError("Переменная окружения API_KEY не задана")
+
+    headers = {"apikey": api_key}
+
+    url = "https://api.apilayer.com/exchangerates_data/convert"
+    params = {
+        "to": to_currency,
+        "from": from_currency,
+        "amount": amount,
+    }
+
+    response = requests.get(url, headers=headers, params=params)  # type: ignore
+
+    data = response.json()
+
+    result = data.get("result")
+    if result is None:
+        raise ValueError("Отсутствует поле 'результат'")
+
+    return float(round(result, 2))
+~~~
+*пример вывода данных:*
+
+692242.54
+
 
 
 ## Тестирование:
 
 Все модули виджета протестированы, ошибок нет.  
-Покрытие тестов 97%
+Покрытие тестов 95%
 
 ## Документация:
 
