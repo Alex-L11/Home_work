@@ -1,5 +1,6 @@
 import json
-from unittest.mock import mock_open, patch
+
+from unittest.mock import mock_open, patch, MagicMock
 
 from src.utils import get_list_transactions, get_transaction
 
@@ -51,23 +52,23 @@ def test_get_list_transactions_not_a_list() -> None:
 
 
 @patch("src.utils.json.load")
-def test_get_list_transactions_no_json_format(mock_load, capsys) -> None:
+def test_get_list_transactions_no_json_format(mock_load: MagicMock, capsys: int) -> None:
     mock_load.side_effect = json.JSONDecodeError("Ошибка декодирования файла", "", 0)
     result = get_list_transactions("mock")
     assert result == []
 
 
-def test_get_transactions(dict_transaction) -> float:
+def test_get_transactions(dict_transaction: dict) -> None:
     assert get_transaction(dict_transaction) == 31957.58
 
 
-def test_get_transactions_usd(dict_transaction_usd) -> float:
+def test_get_transactions_usd(dict_transaction_usd: dict) -> None:
     assert get_transaction(dict_transaction_usd) == 2690818.01
 
 
-def test_get_transactions_none() -> float:
+def test_get_transactions_none() -> None:
     assert get_transaction({}) == 0.0
 
 
-def test_get_transactions_amount_str(dict_trans_1) -> None:
+def test_get_transactions_amount_str(dict_trans_1: dict) -> None:
     assert get_transaction(dict_trans_1) == 0.0

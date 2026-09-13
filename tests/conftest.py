@@ -295,7 +295,7 @@ def transactions_no_correct_description() -> List[dict[str, Any]]:
 
 
 @pytest.fixture
-def dict_transaction():
+def dict_transaction() -> dict:
     return {
         "id": 441945886,
         "state": "EXECUTED",
@@ -308,7 +308,7 @@ def dict_transaction():
 
 
 @pytest.fixture
-def dict_transaction_usd():
+def dict_transaction_usd() -> dict:
     return {
         "id": 441945886,
         "state": "EXECUTED",
@@ -321,7 +321,7 @@ def dict_transaction_usd():
 
 
 @pytest.fixture
-def dict_trans_1():
+def dict_trans_1() -> dict:
     return {
         "id": 441945886,
         "state": "EXECUTED",
@@ -334,7 +334,7 @@ def dict_trans_1():
 
 
 @pytest.fixture
-def dict_trans_2():
+def dict_trans_2() -> dict:
     return {
         "id": 441945886,
         "state": "EXECUTED",
