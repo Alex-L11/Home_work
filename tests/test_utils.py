@@ -1,4 +1,3 @@
-import pytest
 import json
 from unittest.mock import mock_open, patch
 
@@ -71,4 +70,4 @@ def test_get_transactions_none() -> float:
 
 
 def test_get_transactions_amount_str(dict_trans_1) -> None:
-   assert get_transaction(dict_trans_1) == 0.0
+    assert get_transaction(dict_trans_1) == 0.0
