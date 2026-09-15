@@ -63,7 +63,12 @@ def test_get_transactions(dict_transaction: dict) -> None:
 
 
 def test_get_transactions_usd(dict_transaction_usd: dict) -> None:
-    assert get_transaction(dict_transaction_usd) == 2690818.01
+    fix_rate = 80.25
+    expected_amount = float(dict_transaction_usd['operationAmount']['amount']) * fix_rate
+
+    with patch("src.utils.currency_converter", return_value=expected_amount):
+        result = get_transaction(dict_transaction_usd)
+        assert result == 2564595.795
 
 
 def test_get_transactions_none() -> None:
