@@ -1,6 +1,5 @@
 import json
-
-from unittest.mock import mock_open, patch, MagicMock
+from unittest.mock import MagicMock, mock_open, patch
 
 from src.utils import get_list_transactions, get_transaction
 
@@ -64,7 +63,7 @@ def test_get_transactions(dict_transaction: dict) -> None:
 
 def test_get_transactions_usd(dict_transaction_usd: dict) -> None:
     fix_rate = 80.25
-    expected_amount = float(dict_transaction_usd['operationAmount']['amount']) * fix_rate
+    expected_amount = float(dict_transaction_usd["operationAmount"]["amount"]) * fix_rate
 
     with patch("src.utils.currency_converter", return_value=expected_amount):
         result = get_transaction(dict_transaction_usd)
