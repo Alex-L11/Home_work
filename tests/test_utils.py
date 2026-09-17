@@ -1,6 +1,6 @@
 import json
+from unittest.mock import MagicMock, mock_open, patch
 
-from unittest.mock import mock_open, patch, MagicMock
 from src.utils import get_list_transactions, get_transaction
 
 
@@ -62,7 +62,7 @@ def test_get_transactions(dict_transaction: dict) -> None:
 
 
 @patch("src.utils.currency_converter")
-def test_get_transactions_usd(mock_converter, dict_transaction_usd: dict) -> None:
+def test_get_transactions_usd(mock_converter: MagicMock, dict_transaction_usd: dict) -> None:
     expected_rub = 2690818.01
     mock_converter.return_value = expected_rub
     result = get_transaction(dict_transaction_usd)
