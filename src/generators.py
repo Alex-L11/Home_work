@@ -60,21 +60,21 @@ def filter_by_currency(transactions: List[dict[str, Any]], currency: str) -> Ite
         if not isinstance(trans, dict):
             continue
 
-        operation_amount = trans.get('operationAmount')
+        operation_amount = trans.get("operationAmount")
 
         if not isinstance(operation_amount, dict):
             continue
 
-        currency_info = operation_amount.get('currency')
+        currency_info = operation_amount.get("currency")
 
-        if isinstance(currency_info, dict) and currency_info.get('code') == currency.upper():
+        if isinstance(currency_info, dict) and currency_info.get("code") == currency.upper():
             yield trans
 
 
 def transaction_descriptions(description_transaction: List[dict[str, Any]]) -> Iterator[str]:
     """Функкция принимает список словарей с транзакциями и возвращает описание каждой операции по очереди"""
     # вводим переменную с кириллицей, для дальнейшего сравнения
-    russian_letters = set('абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ')
+    russian_letters = set("абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ")
     for trans in description_transaction:
         descript = trans.get("description")
         if isinstance(descript, str) and bool(russian_letters.intersection(descript)):
@@ -83,8 +83,8 @@ def transaction_descriptions(description_transaction: List[dict[str, Any]]) -> I
 
 def card_number_generator(start_number: int, end_number: int) -> Iterator[str]:
     """Функция принимает начальное и конечное значения номеров, а возвращает номера банковских карт в формате
-       ХХХХ ХХХХ ХХХХ ХХХХ, где Х - цифра номера карты. Генератор генерирует номера карт в диапозоне от
-       0000 0000 0000 0001 до 9999 9999 9999 9999."""
+    ХХХХ ХХХХ ХХХХ ХХХХ, где Х - цифра номера карты. Генератор генерирует номера карт в диапозоне от
+    0000 0000 0000 0001 до 9999 9999 9999 9999."""
     # проверка на значения вне диапозона
     if not (1 <= start_number <= end_number <= 9999_9999_9999_9999):
         raise ValueError("Диапозон вне допустимых значений")
