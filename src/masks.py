@@ -24,7 +24,7 @@ def get_mask_card_number(number: Any) -> str:
     return mask_card_number
 
 
-def get_mask_account(account: int) -> str:
+def get_mask_account(account: Any) -> str:
     """Принимает номер счета, возвращает его маску"""
     logger.info("Принимаем номер счета")
 
