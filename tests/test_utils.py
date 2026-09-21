@@ -61,12 +61,13 @@ def test_get_transactions(dict_transaction: dict) -> None:
     assert get_transaction(dict_transaction) == 31957.58
 
 
-@patch("src.utils.currency_converter")
-def test_get_transactions_usd(mock_converter: MagicMock, dict_transaction_usd: dict) -> None:
-    expected_rub = 2690818.01
-    mock_converter.return_value = expected_rub
-    result = get_transaction(dict_transaction_usd)
-    assert result == expected_rub
+def test_get_transactions_usd(dict_transaction_usd: dict) -> None:
+    fix_rate = 80.25
+    expected_amount = float(dict_transaction_usd["operationAmount"]["amount"]) * fix_rate
+
+    with patch("src.utils.currency_converter", return_value=expected_amount):
+        result = get_transaction(dict_transaction_usd)
+        assert result == 2564595.795
 
 
 def test_get_transactions_none() -> None:

@@ -2,7 +2,7 @@ from typing import Any
 
 import pytest
 
-from src.widget import get_date, mask_account_card
+from src.widget import get_date, mask_account_card, return_mask_account_card, format_transactions
 
 
 @pytest.mark.parametrize(
@@ -33,3 +33,24 @@ def test_get_date(date: str) -> Any:
 
     with pytest.raises(TypeError):
         get_date("")
+
+
+def test_return_mask_account_card() -> None:
+    result = return_mask_account_card("Mastercard 1234567890123456")
+    assert result == "Mastercard 1234 56** **** 3456"
+
+
+def test_return_mask_account_card_no_card() -> None:
+    assert return_mask_account_card(None) == ""
+
+
+def test_return_mask_account_card_no_card_1() -> None:
+    assert return_mask_account_card(0.0) == ""
+
+
+def test_format_transactions(dict_for_test) -> None:
+    result = format_transactions(dict_for_test)
+    assert result == ("06.12.2020 Перевод с карты на карту\n"
+                      "Discover 3172 60** **** 0065 -> Discover 0720 42** **** 4643\n"
+                      "Сумма: 29740 COP")
+
