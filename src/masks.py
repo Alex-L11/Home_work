@@ -1,6 +1,7 @@
 import logging
 from typing import Any
 
+
 logger = logging.getLogger("masks")
 logger.setLevel(logging.DEBUG)
 file_handler = logging.FileHandler("logs/masks.log", encoding="utf-8")
