@@ -22,9 +22,10 @@ def filter_by_state(dict_list: List[dict[str, Any]], state: str = "EXECUTED") ->
         if "state" not in dictionary:
             raise TypeError("Нет значения 'state'")
         # создаем переменную значения 'state' и проверяем на условие стррочности и регистра.
-        # если условия выполнены, то такой словарь добавляется в новый список
         value = dictionary["state"]
+
         if isinstance(value, str) and value.upper() == state_up:
+            # если условия выполнены, то такой словарь добавляется в новый список
             dict_list_filter.append(dictionary)
 
     return dict_list_filter
@@ -40,10 +41,8 @@ def sort_by_date(dict_list: List[dict[str, int | str]], reverse: bool = True) ->
 
     # проверка на формат ввода даты
     for diction in dict_list:
-        if len(str(diction["date"])) == 26:
-            continue
-        else:
-            raise TypeError("Введите значения в параметр 'date' в формате: гггг-мм-ддTчч:мм:сс.сссссс")
+        if not diction.get("date"):
+            raise TypeError("В одной из записей отсутствует или пустое поле 'date'")
 
     dict_list_sorted = sorted(dict_list, key=lambda x: (x["date"], x["id"]), reverse=reverse)
 
