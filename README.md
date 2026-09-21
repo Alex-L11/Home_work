@@ -3,20 +3,23 @@
 ## Описание:
 
 Данный виджет находится в стадии разработки, пишется на языке Python.  
-На данный момент работают 11 блоков:
-* маскирует номер карты
-* маскирует номер счета
-* фильтрация выполненных операций по статусу
-* фильтрация выполненных операций по дате
-* итератор для возвращения операций по уазанной валюте
-* генератор описания по каждой операции
-* генератор номеров банковских карт
+На данный момент работают 15 блоков:
+* маскирует номер карты.
+* маскирует номер счета.
+* фильтрация выполненных операций по статусу.
+* фильтрация выполненных операций по дате.
+* итератор для возвращения операций по уазанной валюте.
+* генератор описания по каждой операции.
+* генератор номеров банковских карт.
 * декоратор для логирования начала и конца выполнения фунции,
-  ее результатов или возникших ошибок
+  ее результатов или возникших ошибок.
 * принимает путь до JSON-файла и возвращает список словарей с данными о финансовых транзакциях.
 * принимает транзакцию и возвращает сумму транзакции в рублях.
 * принимает наименование валюты (USD, EUR) и сумму, зетем конвертирует валюту в рубли.
-
+* принимает путь до файла csv и возвращает список словарей с транзакциями.
+* принимает путь до файла excel и возвращает список словарей с транзакциями.
+* поиск в списке словарей операций по заданной строке-описанию.
+* подсчет количества банковских операций определенного типа.
 ## Установка:
 
 1. Клонируйте репозиторий:  
@@ -361,7 +364,7 @@ def get_list_transactions(way_json: str) -> list[dict[str, Any]]:
 {'id': 863064926, 'state': 'EXECUTED', 'date': '2019-12-08T22:46:21.935582', 'operationAmount': {'amount': '41096.24', 'currency': {'name': 'USD', 'code': 'USD'}}, 'description': 'Открытие вклада', 'to': 'Счет 90424923579946435907'}
 ]
 
-#### *11) принимает транзакцию и возвращает сумму транзакции в рублях*
+#### *10) принимает транзакцию и возвращает сумму транзакции в рублях*
 код блока:
 ~~~python
 def get_transaction(data_trans: dict[str, Any]) -> float:
@@ -395,7 +398,7 @@ def get_transaction(data_trans: dict[str, Any]) -> float:
 
 692242.54
 
-#### *12) принимает наименование валюты (USD, EUR) и сумму, зетем конвертирует валюту в рубли*
+#### *11) принимает наименование валюты (USD, EUR) и сумму, зетем конвертирует валюту в рубли*
 код блока:
 ~~~python    
 def currency_converter(currency: str, amount: float) -> float:
@@ -430,12 +433,192 @@ def currency_converter(currency: str, amount: float) -> float:
 
 692242.54
 
+#### *12) принимает путь до файла csv и возвращает список словарей с транзакциями*
+код блока:
+~~~python   
+def get_fin_oper_csv(data_csv: str) -> list[dict[Hashable, Any]]:
+    """ Принимает путь к файлу CSV и выдает список словарей с транзакциями. """
+    # папка где лежит проект
+    base_dir = os.path.dirname(__file__)
 
+    # поднимаемся в корень проекта
+    project_root = os.path.dirname(base_dir)
 
+    # собираем путь до файла целиком
+    data_path = os.path.join(project_root, 'data', data_csv)
+    if not os.path.exists(data_path):
+        raise FileNotFoundError(f'Файл не найден: {data_csv}')
+    try:
+        trans_csv = pd.read_csv(data_path, sep=';')
+        result = trans_csv.to_dict(orient='records')
+        return result
+    except ValueError:
+        raise ValueError('Файл пустой или содержит некорректные данные')
+~~~
+*пример вывода данных:*
+
+[
+
+{
+
+'id': 650703.0, 'state': 'EXECUTED', 'date': '2023-09-05T11:30:32Z', 'amount': 16210.0, 'currency_name': 'Sol',
+'currency_code': 'PEN', 'from': 'Счет 58803664561298323391', 'to': 'Счет 39745660563456619397', 'description': 
+'Перевод организации'
+
+},
+
+{
+
+'id': 3598919.0, 'state': 'EXECUTED', 'date': '2020-12-06T23:00:58Z', 'amount': 29740.0, 'currency_name': 'Peso',
+'currency_code': 'COP', 'from': 'Discover 3172601889670065', 'to': 'Discover 0720428384694643', 'description':
+'Перевод с карты на карту'
+
+},
+
+{
+
+'id': 593027.0, 'state': 'CANCELED', 'date': '2023-07-22T05:02:01Z', 'amount': 30368.0,
+'currency_name': 'Shilling', 'currency_code': 'TZS', 'from': 'Visa 1959232722494097', 'to': 'Visa 6804119550473710',
+'description': 'Перевод с карты на карту'
+
+}
+]
+
+#### *13) принимает путь до файла excel и возвращает список словарей с транзакциями*
+код блока:
+~~~python 
+def get_fin_oper_xlsx(data_xlsx: str) -> list[dict[Hashable, Any]]:
+    """ Принимает путь к файлу Excel и выдает список словарей с транзакциями. """
+    # папка где лежит проект
+    base_dir = os.path.dirname(__file__)
+
+    # поднимаемся в корень проекта
+    project_root = os.path.dirname(base_dir)
+
+    # собираем путь до файла целиком
+    data_path = os.path.join(project_root, 'data', data_xlsx)
+    if not os.path.exists(data_path):
+        raise FileNotFoundError(f'Файл не найден: {data_xlsx}')
+    try:
+        trans_xlsx = pd.read_excel(data_path)
+        result = trans_xlsx.to_dict(orient='records')
+        return result
+    except ValueError:
+        raise ValueError('Файл пустой или содержит некорректные данные')
 ## Тестирование:
+~~~
+*пример вывода данных:*
+
+[
+
+{
+
+'id': 650703.0, 'state': 'EXECUTED', 'date': '2023-09-05T11:30:32Z', 'amount': 16210.0, 'currency_name': 'Sol',
+'currency_code': 'PEN', 'from': 'Счет 58803664561298323391', 'to': 'Счет 39745660563456619397', 'description': 
+'Перевод организации'
+
+},
+
+{
+
+'id': 3598919.0, 'state': 'EXECUTED', 'date': '2020-12-06T23:00:58Z', 'amount': 29740.0, 'currency_name': 'Peso',
+'currency_code': 'COP', 'from': 'Discover 3172601889670065', 'to': 'Discover 0720428384694643', 'description':
+'Перевод с карты на карту'
+
+},
+
+{
+
+'id': 593027.0, 'state': 'CANCELED', 'date': '2023-07-22T05:02:01Z', 'amount': 30368.0,
+'currency_name': 'Shilling', 'currency_code': 'TZS', 'from': 'Visa 1959232722494097', 'to': 'Visa 6804119550473710',
+'description': 'Перевод с карты на карту'
+
+}
+]
+#### *14) поиск в списке словарей операций по заданной строке-описанию*
+*код блока:
+~~~ python
+def process_bank_search(data: list[dict[str, Any]], search: str) -> list[dict[str, Any]]:
+    """Принимает список словарей с данными о банковских операциях и строку поиска, возвращает список словарей, у
+    которых в описании есть данная строка."""
+
+    # задаем шаблон поиска независимо от регистра
+    pattern = re.compile(re.escape(search), flags=re.IGNORECASE)
+    bank_trans = []
+    if search == "":
+        raise TypeError("Пустая строка для поиска")
+    for item in data:
+        # переводим словарь в строку
+        data_str = str(item)
+        if pattern.search(data_str):
+            bank_trans.append(item)
+
+    return bank_trans
+~~~
+*пример вывода данных:*
+
+[
+        {
+            "id": 939719570,
+            "state": "EXECUTED",
+            "date": "2018-06-30T02:08:58.425572",
+            "operationAmount": {"amount": "9824.07", "currency": {"name": "USD", "code": "USD"}},
+            "description": "Перевод организации",
+            "from": "Счет 75106830613657916952",
+            "to": "Счет 11776614605963066702",
+        },
+
+        {
+            "id": 142264268,
+            "state": "EXECUTED",
+            "date": "2019-04-04T23:20:05.206878",
+            "operationAmount": {"amount": "79114.93", "currency": {"name": "USD", "code": "USD"}},
+            "description": "Перевод со счета на счет",
+            "from": "Счет 19708645243227258542",
+            "to": "Счет 75651667383060284188",
+        },
+
+        {
+            "id": 895315941,
+            "state": "EXECUTED",
+            "date": "2018-08-19T04:27:37.904916",
+            "operationAmount": {"amount": "56883.54", "currency": {"name": "USD", "code": "USD"}},
+            "description": "Перевод с карты на карту",
+            "from": "Visa Classic 6831982476737658",
+            "to": "Visa Platinum 8990922113665229",
+        }
+    ]
+
+#### *15) подсчет количества банковских операций определенного типа*
+*код блока:
+~~~
+def process_bank_operations(data: list[dict[str, Any]], categories: list) -> dict[str, int]:
+    """Принимает список словарей с данными о банковских операциях и список категорий операций, возвращает словарь,
+    в котором ключи - это названия категорий, значения - это количетсво операций в каждой категории."""
+
+    if not categories:
+        raise TypeError("Пустой список категорий")
+    # Объединяем все категории в один паттерн через ИЛИ
+    pattern = re.compile("|".join(categories), re.IGNORECASE)
+
+    cat = []
+
+    for item in data:
+        # ищем ключ "description"
+        description = item.get("description", "")
+        # возвращаем список всех найденных значений, которые совпали с шаблоном и добавляем все в общий список
+        cat.extend(pattern.findall(description))
+    # создаем счетчик по каждой категории
+    result = Counter(cat)
+
+    return dict(result)
+~~~
+*пример вывода данных:*
+
+{"Перевод организации", "Перевод с карты на карту", "Открытие вклада"}
 
 Все модули виджета протестированы, ошибок нет.  
-Покрытие тестов 95%
+Покрытие тестов 97%
 
 ## Документация:
 
