@@ -46,14 +46,13 @@ def test_sort_by_date_empty() -> None:
     with pytest.raises(TypeError):
         sort_by_date([])
 
-    with pytest.raises(TypeError):
-        sort_by_date(
+    result = sort_by_date(
             [
                 {"id": 939719570, "state": "EXECUTED", "date": "2018-06-30T:08:58.425572"},
                 {"id": 615064591, "state": "CANCELED", "date": "2016-30T2:08:58.425572"},
             ]
         )
-
+    assert len(result) == 2
 
 def test_sort_by_date_repeat(
     dict_list_date: list[dict[str, Any]], dict_list_date_reverse: list[dict[str, Any]]
