@@ -55,14 +55,15 @@ def filter_by_currency(transactions: List[dict[str, Any]], currency: str) -> Ite
 
     # проверка, что это словарь, если нет пропускаем
     if not (isinstance(transactions, list)) or not transactions or currency == "":
-        raise TypeError("Неверный тип транзакций")
+        return
+
     for trans in transactions:
         if not isinstance(trans, dict):
             continue
 
-        if 'currency_code' in trans:
-            if trans['currency_code'] == currency.upper():
-                yield trans
+        cur_code = trans.get('currency_code')
+        if isinstance(cur_code, str) and cur_code.upper() == currency.upper():
+            yield trans
             continue
 
         operation_amount = trans.get("operationAmount")

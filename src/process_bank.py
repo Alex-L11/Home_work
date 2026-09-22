@@ -9,14 +9,16 @@ def process_bank_search(data: list[dict[str, Any]], search: str) -> list[dict[st
     которых в описании есть данная строка."""
 
     # задаем шаблон поиска независимо от регистра
-    pattern = re.compile(re.escape(search), flags=re.IGNORECASE)
+    pattern = re.compile(search, flags=re.IGNORECASE)
     bank_trans = []
     if search == "":
         raise TypeError("Пустая строка для поиска")
     for item in data:
-        # переводим словарь в строку
-        data_str = str(item)
-        if pattern.search(data_str):
+        # получаем ключ, где будет происходить поиск по строке
+        description = item.get('description')
+        if description is None:
+            continue
+        if pattern.search(str(description)):
             bank_trans.append(item)
 
     return bank_trans

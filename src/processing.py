@@ -6,8 +6,9 @@ def filter_by_state(dict_list: List[dict[str, Any]], state: str = "EXECUTED") ->
     значению"""
 
     # проверяем на пустую строку
-    if dict_list == []:
-        raise TypeError("Нет данных, повторите ввод данных")
+    if not dict_list:
+        return []
+        # raise TypeError("Нет данных, повторите ввод данных")
 
     # проверяем что 'state' строчное значение, если нет выдае ошибку
     if not isinstance(state, str):
@@ -19,11 +20,11 @@ def filter_by_state(dict_list: List[dict[str, Any]], state: str = "EXECUTED") ->
 
     # проверяем словари на значение 'state', если нет выдает ошибку.
     for dictionary in dict_list:
-        if "state" not in dictionary:
-            raise TypeError("Нет значения 'state'")
-        # создаем переменную значения 'state' и проверяем на условие стррочности и регистра.
-        value = dictionary["state"]
+        if not isinstance(dictionary, dict):
+            continue
 
+        # создаем переменную значения 'state' и проверяем на условие стррочности и регистра.
+        value = dictionary.get("state")
         if isinstance(value, str) and value.upper() == state_up:
             # если условия выполнены, то такой словарь добавляется в новый список
             dict_list_filter.append(dictionary)

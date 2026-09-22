@@ -73,8 +73,17 @@ def format_transactions(operation: dict) -> str:
     if isinstance(amount, float) and amount == int(amount):
         amount = int(amount)
 
-    currency_code = operation.get('currency_code', '')
-    currency_str = 'руб.' if currency_code == 'RUB' else currency_code
+    currency_code = operation.get('currency_code')
+    if not currency_code:
+        cur_info = (operation.get('operationAmount') or {}).get('currency') or {}
+        currency_code = cur_info.get('code')
+
+    if currency_code == 'RUB':
+        currency_str = 'руб.'
+    elif currency_code:
+        currency_str = currency_code.upper()
+    else:
+        currency_str = 'Валюта не указана'
 
     # откуда/куда
     from_raw = operation.get('from', '')
