@@ -31,7 +31,7 @@ def get_date(date: str) -> str:
     if len(date) == 26:
         date_filter = f"{date[8:10]}.{date[5:7]}.{date[0:4]}"
     elif len(date) == 20:
-        date_filter = f'{date[8:10]}.{date[5:7]}.{date[0:4]}'
+        date_filter = f"{date[8:10]}.{date[5:7]}.{date[0:4]}"
     else:
         raise TypeError("Введите дату формата: гггг-мм-ддTчч:мм:сс.сссссс")
 
@@ -47,16 +47,16 @@ def return_mask_account_card(card_value: str) -> str:
         return ""
 
     # Извлекаем только цифры
-    number_digit = "". join(nc for nc in card_value if nc.isdigit())
+    number_digit = "".join(nc for nc in card_value if nc.isdigit())
 
     if len(number_digit) == 16:
         name_card = card_value.replace(number_digit, "").strip()
         masked = get_mask_card_number(number_digit)
-        return f'{name_card} {masked}'
+        return f"{name_card} {masked}"
 
     elif len(number_digit) == 20:
         masked = get_mask_account(number_digit)
-        return f'Счет {masked}'
+        return f"Счет {masked}"
 
     else:
         return card_value
@@ -65,41 +65,51 @@ def return_mask_account_card(card_value: str) -> str:
 def format_transactions(operation: dict) -> str:
     """Форматирует одну транзакцию в виде дата, наименование транакции\n счет или номер карты\n cумма"""
     # вывод даты
-    formatted_date = get_date(operation.get('date', ''))
-    description = operation.get('description')
+    formatted_date = get_date(operation.get("date", ""))
+    description = operation.get("description")
 
-    # вывод суммы
-    amount = operation.get('amount', 0)
+    # вывод суммы из operationAmount['amount']
+    operation_amount = operation.get("operationAmount") or {}
+    amount_raw = operation_amount.get("amount")
+
+    if isinstance(amount_raw, str):
+        try:
+            amount = float(amount_raw)
+        except ValueError:
+            amount = 0.0
+    else:
+        amount = amount_raw if isinstance(amount_raw, (int, float)) else 0.0
+
     if isinstance(amount, float) and amount == int(amount):
         amount = int(amount)
 
-    currency_code = operation.get('currency_code')
+    currency_code = operation.get("currency_code")
     if not currency_code:
-        cur_info = (operation.get('operationAmount') or {}).get('currency') or {}
-        currency_code = cur_info.get('code')
+        cur_info = (operation.get("operationAmount") or {}).get("currency") or {}
+        currency_code = cur_info.get("code")
 
-    if currency_code == 'RUB':
-        currency_str = 'руб.'
+    if currency_code == "RUB":
+        currency_str = "руб."
     elif currency_code:
         currency_str = currency_code.upper()
     else:
-        currency_str = 'Валюта не указана'
+        currency_str = "Валюта не указана"
 
     # откуда/куда
-    from_raw = operation.get('from', '')
-    to_raw = operation.get('to', '')
+    from_raw = operation.get("from", "")
+    to_raw = operation.get("to", "")
 
-    from_str = return_mask_account_card(from_raw) if from_raw else ''
-    to_str = return_mask_account_card(to_raw) if to_raw else ''
+    from_str = return_mask_account_card(from_raw) if from_raw else ""
+    to_str = return_mask_account_card(to_raw) if to_raw else ""
 
     # сборка строк
-    lines = [f'{formatted_date} {description}']
+    lines = [f"{formatted_date} {description}"]
 
     if from_str and to_str:
-        lines.append(f'{from_str} -> {to_str}')
+        lines.append(f"{from_str} -> {to_str}")
     elif to_str:
         lines.append(to_str)
 
-    lines.append(f'Сумма: {amount} {currency_str}')
+    lines.append(f"Сумма: {amount} {currency_str}")
 
-    return '\n'.join(lines)
+    return "\n".join(lines)
