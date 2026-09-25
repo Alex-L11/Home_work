@@ -1,0 +1,635 @@
+# Виджет банковских операций клиента
+
+## Описание:
+
+Данный виджет находится в стадии разработки, пишется на языке Python.  
+На данный момент работают 15 блоков:
+* маскирует номер карты.
+* маскирует номер счета.
+* фильтрация выполненных операций по статусу.
+* фильтрация выполненных операций по дате.
+* итератор для возвращения операций по уазанной валюте.
+* генератор описания по каждой операции.
+* генератор номеров банковских карт.
+* декоратор для логирования начала и конца выполнения фунции,
+  ее результатов или возникших ошибок.
+* принимает путь до JSON-файла и возвращает список словарей с данными о финансовых транзакциях.
+* принимает транзакцию и возвращает сумму транзакции в рублях.
+* принимает наименование валюты (USD, EUR) и сумму, зетем конвертирует валюту в рубли.
+* принимает путь до файла csv и возвращает список словарей с транзакциями.
+* принимает путь до файла excel и возвращает список словарей с транзакциями.
+* поиск в списке словарей операций по заданной строке-описанию.
+* подсчет количества банковских операций определенного типа.
+## Установка:
+
+1. Клонируйте репозиторий:  
+
+```shell  
+   git clone https://github.com/Alex-L11/Home_work.git
+```
+
+2. Установка зависимости:
+```
+pip install -r requiremenys.txt
+```
+## Использование: 
+
+1. Откройте PyCharm
+2. В окне нажмите New project
+3. В терминале введите команды из "Установка", пункты 1 и 2
+
+### Пример использования блоков виджета:
+
+#### *1) Блок маскировки номера карты*
+
+код блока:
+~~~python
+def get_mask_card_number(number: Any) -> str:
+    """Принимает номер карты, разбивает номер по 4 цифры и маскирует номер"""
+    num_card = str(number)
+    mask_card_number = ""
+    if len(num_card) == 16:
+        mask_card_number = f"{num_card[0:4]} {num_card[4:6]}** **** {num_card[-4:]}"
+    else:
+        raise TypeError("Введите 16-ти значный номер карты")
+
+    return mask_card_number
+   ~~~
+
+*пример вывода данных:*
+
+Пример для карты
+
+Visa Platinum 7000792289606361  # входной аргумент
+
+Visa Platinum 7000 79** **** 6361  # выход функции
+
+
+#### *2) Блок маскировки номера счета*   
+код блока:
+~~~python
+def get_mask_account(account: int) -> str:
+    """Принимает номер счета, возвращает его маску"""
+
+    num_account = str(account)
+    if len(num_account) == 20:
+        mask_account = f"** {num_account[-4:]}"
+    else:
+        raise TypeError("Введите 20-ти значный номер счета")
+
+    return mask_account
+~~~
+
+*пример вывода данных:*
+
+Счет 73654108430135874305  # входной аргумент
+
+Счет **4305  # выход функции
+#### *3) Вывод выполненных операций по статусу*
+код блока:
+~~~python
+def filter_by_state(dict_list: List[dict[str, Any]], state: str = "EXECUTED") -> List[dict[str, Any]]:
+    """Функция возвращает новый список словарей и только те словари у которых ключ state соответствует указанному
+    значению"""
+
+    # проверяем на пустую строку
+    if dict_list == []:
+        raise TypeError("Нет данных, повторите ввод данных")
+
+    # проверяем что 'state' строчное значение, если нет выдае ошибку
+    if not isinstance(state, str):
+        raise TypeError("Неправильное значение 'state'")
+
+    state_up = state.upper()
+    # создаем пустой список для отфильтрованных словарей
+    dict_list_filter = []
+
+    # проверяем словари на значение 'state', если нет выдает ошибку.
+    for dictionary in dict_list:
+        if "state" not in dictionary:
+            raise TypeError("Нет значения 'state'")
+        # создаем переменную значения 'state' и проверяем на условие стррочности и регистра.
+        # если условия выполнены, то такой словарь добавляется в новый список
+        value = dictionary["state"]
+        if isinstance(value, str) and value.upper() == state_up:
+            dict_list_filter.append(dictionary)
+
+    return dict_list_filter
+
+~~~
+*пример вывода данных:*
+Выход функции со статусом по умолчанию 'EXECUTED'
+
+[{'id': 414288290, 'state': 'EXECUTED', 'date': '2019-07-03T18:35:29.512364'},
+{'id': 939719570, 'state': 'EXECUTED', 'date': '2018-06-30T02:08:58.425572'}]
+
+Выход функции, если вторым аргументом передано 'CANCELED'
+
+[{'id': 594226727, 'state': 'CANCELED', 'date': '2018-09-12T21:27:25.241689'}, 
+ {'id': 615064591, 'state': 'CANCELED', 'date': '2018-10-14T08:21:33.419441'}]
+
+#### *4) Фильтрация выполненных операций по дате*
+код блока:
+~~~python
+def sort_by_date(dict_list: List[dict[str, int | str]], reverse: bool = True) -> List[dict[str, int | str]]:
+    """Функция принимает список словарей и необязательный параметр, задающий порядок сортировки по дате. По умолчанию
+    сортировка по убыванию"""
+
+    # проверяем на пустую строку
+    if dict_list == []:
+        raise TypeError("Не ввели данные")
+
+    # проверка на формат ввода даты
+    for diction in dict_list:
+        if len(str(diction["date"])) == 26:
+            continue
+        else:
+            raise TypeError("Введите значения в параметр 'date' в формате: гггг-мм-ддTчч:мм:сс.сссссс")
+
+    dict_list_sorted = sorted(dict_list, key=lambda x: (x["date"], x["id"]), reverse=reverse)
+
+    return dict_list_sorted
+~~~
+
+*пример вывода данных:*
+[{'id': 41428829, 'state': 'EXECUTED', 'date': '2019-07-03T18:35:29.512364'},
+{'id': 615064591, 'state': 'CANCELED', 'date': '2018-10-14T08:21:33.419441'},
+{'id': 594226727, 'state': 'CANCELED', 'date': '2018-09-12T21:27:25.241689'},
+{'id': 939719570, 'state': 'EXECUTED', 'date': '2018-06-30T02:08:58.425572'}]
+
+#### *5) Итератор для возвращения операций по уазанной валюте*
+код блока:
+~~~python
+def filter_by_currency(transactions: List[dict[str, Any]], currency: str) -> Iterator[dict[str, Any]]:
+    """Функция принимает на вход список словарей с транзакциями, возвращает по очередно транзакции, где валюта
+    операции соответсвует заданной (например USD)"""
+
+    # проверка, что это словарь, если нет пропускаем
+    for trans in transactions:
+        if not isinstance(trans, dict):
+            continue
+
+        operation_amount = trans.get('operationAmount')
+
+        if not isinstance(operation_amount, dict):
+            continue
+
+        currency_info = operation_amount.get('currency')
+
+        if isinstance(currency_info, dict) and currency_info.get('code') == currency.upper():
+            yield trans
+~~~
+*пример вывода данных:*
+
+{
+"id": 939719570,
+
+"state": "EXECUTED",
+
+"date": "2018-06-30T02:08:58.425572",
+
+"operationAmount": {"amount": "9824.07",
+
+"currency": {"name": "USD","code": "USD"
+}
+
+},
+
+"description": "Перевод организации",
+
+"from": "Счет 75106830613657916952",
+
+"to": "Счет 11776614605963066702"
+
+  }
+
+  {
+"id": 142264268,
+
+"state": "EXECUTED",
+
+"date": "2019-04-04T23:20:05.206878",
+
+"operationAmount": {"amount": "79114.93", 
+
+"currency": {"name": "USD", "code": "USD"}},
+
+"description": "Перевод со счета на счет",
+
+"from": "Счет 19708645243227258542",
+
+"to": "Счет 75651667383060284188"
+
+   }
+
+#### *6) Генератор описания по каждой операции*
+код блока:
+~~~python
+def transaction_descriptions(description_transaction: List[dict[str, Any]]) -> Iterator[str]:
+    """Функкция принимает список словарей с транзакциями и возвращает описание каждой операции по очереди"""
+    # вводим переменную с кириллицей, для дальнейшего сравнения
+    russian_letters = set('абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ')
+    for trans in description_transaction:
+        descript = trans.get("description")
+        if isinstance(descript, str) and bool(russian_letters.intersection(descript)):
+            yield descript
+~~~
+*пример вывода данных:*
+
+    Перевод организации
+
+    Перевод со счета на счет
+
+    Перевод со счета на счет
+
+    Перевод с карты на карту
+
+    Перевод организации
+
+#### *7) Генератор номеров банковских карт*
+код блока:
+~~~python
+def card_number_generator(start_number: int, end_number: int) -> Iterator[str]:
+    """Функция принимает начальное и конечное значения номеров, а возвращает номера банковских карт в формате
+       ХХХХ ХХХХ ХХХХ ХХХХ, где Х - цифра номера карты. Генератор генерирует номера карт в диапозоне от
+       0000 0000 0000 0001 до 9999 9999 9999 9999."""
+    # проверка на значения вне диапозона
+    if not (1 <= start_number <= end_number <= 9999_9999_9999_9999):
+        raise ValueError("Диапозон вне допустимых значений")
+
+    for num in range(start_number, end_number + 1):
+        # преобразуем число в строку из 16 символов, заданного формата
+        card_number = f"{num:016d}"
+        # разделяем по 4 символа, вида 0000 0000 0000 0000
+        format_num = f"{card_number[:4]} {card_number[4:8]} {card_number[8:12]} {card_number[12:]}"
+        yield format_num
+~~~
+*пример вывода данных:*
+
+    0000 0000 0000 0001
+    0000 0000 0000 0002
+    0000 0000 0000 0003
+    0000 0000 0000 0004
+    0000 0000 0000 0005
+
+
+#### *8) Декоратор для логирования начала и конца выполнения фунции,  ее результатов или возникших ошибок*
+код блока:
+~~~python
+F = TypeVar("F", bound=Callable[..., Any])
+
+
+def log(filename: Optional[str] = None) -> Callable[[F], F]:
+    """
+    Декоратор для логирования начала и конца выполнения фунции, ее результатов или возникших ошибок.
+    Принимает необязательный аргумент "filename", который определяет, куда будут записываться логи:
+    - Если filename задан, логи записываются в указанный файл
+    - Если filename не задан, логи выводятся в консоль
+    """
+
+    def decorator(func: F) -> F:
+        @wraps(func)
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
+            # получаем логгер по имени модуля, где определена фукнция (func.__module__)
+            logger = logging.getLogger(f"{func.__module__}.{func.__name__}")
+            logger.setLevel(logging.INFO)
+            # определяем куда записывать лог
+            if filename:
+                # если filename указан, создаем хендлер, который пишет логи в файл
+                handler: logging.Handler = logging.FileHandler(filename, encoding="utf-8")
+                # задаем формат строки: время, имя логгера, сообщение
+            else:
+                # если filename нет, используем StreamHandler для консоли
+                handler = logging.StreamHandler()
+                # привязываем форматтер к хендлеру и добавляем хендлер к логгеру, чтобы логгер знал как форматировать
+            # сообщения и куда их отправлять
+
+            handler.setFormatter(logging.Formatter("%(message)s"))
+            logger.addHandler(handler)
+
+            try:
+                # выдает сообщение о начале выполнения функции, подставляя ее имя
+                logger.info("Начало выполнения %s", func.__name__)
+                result = func(*args, **kwargs)
+                logger.info("Конец выполнения %s ok", func.__name__)
+                return result
+            except Exception as e:
+                # логгируем тип ошибки
+                logger.info(
+                    "%s error: %s. Inputs: %r, %r",
+                    func.__name__,
+                    type(e).__name__,
+                    args,
+                    kwargs,
+                )
+                raise
+
+        return wrapper  # type: ignore[return-value]
+
+    return decorator
+~~~
+*пример вывода данных:*
+Начало выполнения my_func
+Конец выполнения my_func ok
+7
+    
+#### *9) Принимает путь до JSON-файла и возвращает список словарей с данными о финансовых транзакциях*
+код блока:
+~~~python
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+def get_list_transactions(way_json: str) -> list[dict[str, Any]]:
+    """Принимает путь до JSON-файла и возвращает список словарей с данными о финансовых транзакциях."""
+    file_path = os.path.join(BASE_DIR, "data", way_json)
+    try:
+        with open(file_path, "r", encoding="utf-8") as file_transactions:
+            try:
+                transaction_data = json.load(file_transactions)
+                if not isinstance(transaction_data, list):
+                    return []
+                return transaction_data
+            except json.JSONDecodeError:
+                print("Ошибка декодирования файла")
+                return []
+    except FileNotFoundError:
+        print("Файл не найден")
+        return []
+~~~
+*пример вывода данных:*
+[
+
+{'id': 441945886, 'state': 'EXECUTED', 'date': '2019-08-26T10:50:58.294041', 'operationAmount': {'amount': '31957.58', 'currency': {'name': 'руб.', 'code': 'RUB'}}, 'description': 'Перевод организации', 'from': 'Maestro 1596837868705199', 'to': 'Счет 64686473678894779589'},
+
+{'id': 863064926, 'state': 'EXECUTED', 'date': '2019-12-08T22:46:21.935582', 'operationAmount': {'amount': '41096.24', 'currency': {'name': 'USD', 'code': 'USD'}}, 'description': 'Открытие вклада', 'to': 'Счет 90424923579946435907'}
+]
+
+#### *10) принимает транзакцию и возвращает сумму транзакции в рублях*
+код блока:
+~~~python
+def get_transaction(data_trans: dict[str, Any]) -> float:
+    """Принимает транзакцию и возвращает сумму транзакции в рублях."""
+    get_amount = data_trans.get("operationAmount", {})
+    get_currency = get_amount.get("currency", {})
+    amount_transaction = get_amount.get("amount")
+
+    if isinstance(data_trans, dict):
+        currency = get_currency.get("code", "").upper()
+    else:
+        currency = str(get_currency).upper()
+
+    if not amount_transaction:
+        return 0.0
+
+    try:
+        amount = float(amount_transaction)
+    except ValueError, TypeError:
+        return 0.0
+
+    if currency == "RUB":
+        return amount
+
+    if currency in ("EUR", "USD"):
+        return currency_converter(currency, amount)
+
+    return currency_converter(currency, amount)
+~~~
+*пример вывода данных:*
+
+692242.54
+
+#### *11) принимает наименование валюты (USD, EUR) и сумму, зетем конвертирует валюту в рубли*
+код блока:
+~~~python    
+def currency_converter(currency: str, amount: float) -> float:
+    """Принимает наименование валюты (USD, EUR) и конвертирует валюту в рубли."""
+    from_currency = currency.upper()
+    to_currency = "RUB"
+
+    api_key = os.getenv("API_KEY")
+    if not api_key:
+        raise ValueError("Переменная окружения API_KEY не задана")
+
+    headers = {"apikey": api_key}
+
+    url = "https://api.apilayer.com/exchangerates_data/convert"
+    params = {
+        "to": to_currency,
+        "from": from_currency,
+        "amount": amount,
+    }
+
+    response = requests.get(url, headers=headers, params=params)  # type: ignore
+
+    data = response.json()
+
+    result = data.get("result")
+    if result is None:
+        raise ValueError("Отсутствует поле 'результат'")
+
+    return float(round(result, 2))
+~~~
+*пример вывода данных:*
+
+692242.54
+
+#### *12) принимает путь до файла csv и возвращает список словарей с транзакциями*
+код блока:
+~~~python   
+def get_fin_oper_csv(data_csv: str) -> list[dict[Hashable, Any]]:
+    """ Принимает путь к файлу CSV и выдает список словарей с транзакциями. """
+    # папка где лежит проект
+    base_dir = os.path.dirname(__file__)
+
+    # поднимаемся в корень проекта
+    project_root = os.path.dirname(base_dir)
+
+    # собираем путь до файла целиком
+    data_path = os.path.join(project_root, 'data', data_csv)
+    if not os.path.exists(data_path):
+        raise FileNotFoundError(f'Файл не найден: {data_csv}')
+    try:
+        trans_csv = pd.read_csv(data_path, sep=';')
+        result = trans_csv.to_dict(orient='records')
+        return result
+    except ValueError:
+        raise ValueError('Файл пустой или содержит некорректные данные')
+~~~
+*пример вывода данных:*
+
+[
+
+{
+
+'id': 650703.0, 'state': 'EXECUTED', 'date': '2023-09-05T11:30:32Z', 'amount': 16210.0, 'currency_name': 'Sol',
+'currency_code': 'PEN', 'from': 'Счет 58803664561298323391', 'to': 'Счет 39745660563456619397', 'description': 
+'Перевод организации'
+
+},
+
+{
+
+'id': 3598919.0, 'state': 'EXECUTED', 'date': '2020-12-06T23:00:58Z', 'amount': 29740.0, 'currency_name': 'Peso',
+'currency_code': 'COP', 'from': 'Discover 3172601889670065', 'to': 'Discover 0720428384694643', 'description':
+'Перевод с карты на карту'
+
+},
+
+{
+
+'id': 593027.0, 'state': 'CANCELED', 'date': '2023-07-22T05:02:01Z', 'amount': 30368.0,
+'currency_name': 'Shilling', 'currency_code': 'TZS', 'from': 'Visa 1959232722494097', 'to': 'Visa 6804119550473710',
+'description': 'Перевод с карты на карту'
+
+}
+]
+
+#### *13) принимает путь до файла excel и возвращает список словарей с транзакциями*
+код блока:
+~~~python 
+def get_fin_oper_xlsx(data_xlsx: str) -> list[dict[Hashable, Any]]:
+    """ Принимает путь к файлу Excel и выдает список словарей с транзакциями. """
+    # папка где лежит проект
+    base_dir = os.path.dirname(__file__)
+
+    # поднимаемся в корень проекта
+    project_root = os.path.dirname(base_dir)
+
+    # собираем путь до файла целиком
+    data_path = os.path.join(project_root, 'data', data_xlsx)
+    if not os.path.exists(data_path):
+        raise FileNotFoundError(f'Файл не найден: {data_xlsx}')
+    try:
+        trans_xlsx = pd.read_excel(data_path)
+        result = trans_xlsx.to_dict(orient='records')
+        return result
+    except ValueError:
+        raise ValueError('Файл пустой или содержит некорректные данные')
+## Тестирование:
+~~~
+*пример вывода данных:*
+
+[
+
+{
+
+'id': 650703.0, 'state': 'EXECUTED', 'date': '2023-09-05T11:30:32Z', 'amount': 16210.0, 'currency_name': 'Sol',
+'currency_code': 'PEN', 'from': 'Счет 58803664561298323391', 'to': 'Счет 39745660563456619397', 'description': 
+'Перевод организации'
+
+},
+
+{
+
+'id': 3598919.0, 'state': 'EXECUTED', 'date': '2020-12-06T23:00:58Z', 'amount': 29740.0, 'currency_name': 'Peso',
+'currency_code': 'COP', 'from': 'Discover 3172601889670065', 'to': 'Discover 0720428384694643', 'description':
+'Перевод с карты на карту'
+
+},
+
+{
+
+'id': 593027.0, 'state': 'CANCELED', 'date': '2023-07-22T05:02:01Z', 'amount': 30368.0,
+'currency_name': 'Shilling', 'currency_code': 'TZS', 'from': 'Visa 1959232722494097', 'to': 'Visa 6804119550473710',
+'description': 'Перевод с карты на карту'
+
+}
+]
+#### *14) поиск в списке словарей операций по заданной строке-описанию*
+*код блока:
+~~~ python
+def process_bank_search(data: list[dict[str, Any]], search: str) -> list[dict[str, Any]]:
+    """Принимает список словарей с данными о банковских операциях и строку поиска, возвращает список словарей, у
+    которых в описании есть данная строка."""
+
+    # задаем шаблон поиска независимо от регистра
+    pattern = re.compile(re.escape(search), flags=re.IGNORECASE)
+    bank_trans = []
+    if search == "":
+        raise TypeError("Пустая строка для поиска")
+    for item in data:
+        # переводим словарь в строку
+        data_str = str(item)
+        if pattern.search(data_str):
+            bank_trans.append(item)
+
+    return bank_trans
+~~~
+*пример вывода данных:*
+
+[
+        {
+            "id": 939719570,
+            "state": "EXECUTED",
+            "date": "2018-06-30T02:08:58.425572",
+            "operationAmount": {"amount": "9824.07", "currency": {"name": "USD", "code": "USD"}},
+            "description": "Перевод организации",
+            "from": "Счет 75106830613657916952",
+            "to": "Счет 11776614605963066702",
+        },
+
+        {
+            "id": 142264268,
+            "state": "EXECUTED",
+            "date": "2019-04-04T23:20:05.206878",
+            "operationAmount": {"amount": "79114.93", "currency": {"name": "USD", "code": "USD"}},
+            "description": "Перевод со счета на счет",
+            "from": "Счет 19708645243227258542",
+            "to": "Счет 75651667383060284188",
+        },
+
+        {
+            "id": 895315941,
+            "state": "EXECUTED",
+            "date": "2018-08-19T04:27:37.904916",
+            "operationAmount": {"amount": "56883.54", "currency": {"name": "USD", "code": "USD"}},
+            "description": "Перевод с карты на карту",
+            "from": "Visa Classic 6831982476737658",
+            "to": "Visa Platinum 8990922113665229",
+        }
+    ]
+
+#### *15) подсчет количества банковских операций определенного типа*
+*код блока:
+~~~
+def process_bank_operations(data: list[dict[str, Any]], categories: list) -> dict[str, int]:
+    """Принимает список словарей с данными о банковских операциях и список категорий операций, возвращает словарь,
+    в котором ключи - это названия категорий, значения - это количетсво операций в каждой категории."""
+
+    if not categories:
+        raise TypeError("Пустой список категорий")
+    # Объединяем все категории в один паттерн через ИЛИ
+    pattern = re.compile("|".join(categories), re.IGNORECASE)
+
+    cat = []
+
+    for item in data:
+        # ищем ключ "description"
+        description = item.get("description", "")
+        # возвращаем список всех найденных значений, которые совпали с шаблоном и добавляем все в общий список
+        cat.extend(pattern.findall(description))
+    # создаем счетчик по каждой категории
+    result = Counter(cat)
+
+    return dict(result)
+~~~
+*пример вывода данных:*
+
+{"Перевод организации", "Перевод с карты на карту", "Открытие вклада"}
+
+Все модули виджета протестированы, ошибок нет.  
+Покрытие тестов 97%
+
+## Документация:
+
+Для получения дополнительной информации о структуре проекта и API можно   
+будет найти в [документации](docs/REDME.md)
+
+## Лицензия:
+
+Проект в стадии разработки, лицензия временно отсутсвует.
+
+
+
+
+
